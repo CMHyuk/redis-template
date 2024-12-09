@@ -11,10 +11,6 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.dao.DataAccessException;
-import org.springframework.data.redis.connection.RedisConnection;
-import org.springframework.data.redis.connection.StringRedisConnection;
-import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
@@ -22,7 +18,6 @@ import org.springframework.stereotype.Service;
 import com.google.gson.Gson;
 
 import lombok.RequiredArgsConstructor;
-import lombok.val;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -50,7 +45,7 @@ public class RedisCommon {
         template.expire(key, defaultExpireTime);
     }
 
-    public <T> void multiSetdata(Map<String, T> datas) {
+    public <T> void multiSetData(Map<String, T> datas) {
         Map<String, String> jsonMap = new HashMap<>();
 
         for (Map.Entry<String, T> entry : datas.entrySet()) {
@@ -107,17 +102,17 @@ public class RedisCommon {
 
     public <T> List<T> getAllList(String key, Class<T> clazz) {
         List<String> jsonValues = template.opsForList().range(key, 0, -1);
-        List<T> reusltSet = new ArrayList<>();
+        List<T> resultSet = new ArrayList<>();
 
 
         if (jsonValues != null ) {
             for (String jsonValue : jsonValues) {
                 T value = gson.fromJson(jsonValue, clazz);
-                reusltSet.add(value);
+                resultSet.add(value);
             }
         }
 
-        return reusltSet;
+        return resultSet;
     }
 
     public <T> void removeFromList(String key, T value) {
@@ -153,7 +148,7 @@ public class RedisCommon {
         return template.opsForValue().getBit(key, offset);
     }
 
-    public Long SumTwoKeyAndRenew(String key1, String key2, String resultKey) {
+    public Long sumTwoKeyAndRenew(String key1, String key2, String resultKey) {
         DefaultRedisScript<Long> redisScript = new DefaultRedisScript<>();
 
         redisScript.setLocation(new ClassPathResource("/lua/newKey.lua"));

@@ -22,23 +22,23 @@ public class StringController {
         summary = "set string"
     )
     @PostMapping("/set-string-collection")
-    public void SetString(
+    public void setString(
         @RequestBody @Valid StringRequest req
     ) {
-        redis.Set(req);
+        redis.set(req);
     }
 
     @GetMapping("/get-string-collection")
-    public StringResponse GetString(
+    public StringResponse getString(
         @RequestParam @Valid String key
     ) {
-        return redis.Get(key);
+        return redis.get(key);
     }
 
     @PostMapping("/multi-set-collection")
-    public void MultiString(
+    public void multiString(
         @RequestBody @Valid MultiStringRequest req
     ) {
-        redis.MultiSet(req);
+        redis.multiSet(req);
     }
 }

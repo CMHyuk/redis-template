@@ -8,5 +8,5 @@ import java.util.List;
 @Schema(description = "redis string response")
 public record StringResponse(
     @Schema(description = "set string response")
-    List<StringModel> reponse
+    List<StringModel> response
 ){ }

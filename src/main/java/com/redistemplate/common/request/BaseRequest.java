@@ -9,6 +9,6 @@ public record BaseRequest(
     @Schema(description = "redis key")
     @NotBlank
     @NotNull
-    String Key
+    String key
 ) {
 }

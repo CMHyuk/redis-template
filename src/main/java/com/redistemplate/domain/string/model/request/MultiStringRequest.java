@@ -13,6 +13,6 @@ public record MultiStringRequest(
     @Schema(description = "names")
     @NotBlank
     @NotNull
-    String[] Names
+    String[] names
 ) {
 } 
