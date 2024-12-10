@@ -18,27 +18,19 @@ public class StringController {
 
     private final RedisString redis;
 
-    @Operation(
-        summary = "set string"
-    )
+    @Operation(summary = "set string")
     @PostMapping("/set-string-collection")
-    public void setString(
-        @RequestBody @Valid StringRequest req
-    ) {
+    public void setString(@RequestBody @Valid StringRequest req) {
         redis.set(req);
     }
 
     @GetMapping("/get-string-collection")
-    public StringResponse getString(
-        @RequestParam @Valid String key
-    ) {
+    public StringResponse getString(@RequestParam @Valid String key) {
         return redis.get(key);
     }
 
     @PostMapping("/multi-set-collection")
-    public void multiString(
-        @RequestBody @Valid MultiStringRequest req
-    ) {
+    public void multiString(@RequestBody @Valid MultiStringRequest req) {
         redis.multiSet(req);
     }
 }
