@@ -9,8 +9,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.redistemplate.domain.strategy.model.ValueWithTTL;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.dao.DataAccessException;
+import org.springframework.data.redis.connection.RedisConnection;
+import org.springframework.data.redis.connection.StringRedisConnection;
+import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
@@ -27,7 +32,7 @@ public class RedisCommon {
     private final RedisTemplate<String, String> template;
     private final Gson gson;
 
-    @Value("${spring.redis.default-time}")
+    @Value("${spring.data.redis.default-time}")
     private Duration defaultExpireTime;
 
     public <T> T getData(String key, Class<T> clazz) {
@@ -146,6 +151,31 @@ public class RedisCommon {
 
     public boolean getBit(String key, long offset) {
         return template.opsForValue().getBit(key, offset);
+    }
+
+    public <T> ValueWithTTL<T> getValueWithTTl(String key, Class<T> clazz) {
+        T value = null;
+        Long ttl = null;
+
+        try {
+
+            List<Object> results = template.executePipelined(new RedisCallback<Object>() {
+                public Object doInRedis(RedisConnection connection) throws DataAccessException {
+                    StringRedisConnection conn = (StringRedisConnection) connection;
+                    conn.get(key);
+                    conn.ttl(key);
+
+                    return null;
+                }
+            });
+
+            value = gson.fromJson((String) results.get(0), clazz);
+            ttl = (Long) results.get(1);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return new ValueWithTTL(value, ttl);
     }
 
     public Long sumTwoKeyAndRenew(String key1, String key2, String resultKey) {
