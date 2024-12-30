@@ -1,13 +1,8 @@
 package com.redistemplate.common.redis;
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.time.Instant;
+import java.util.*;
 
 import com.redistemplate.domain.strategy.model.ValueWithTTL;
 import org.springframework.beans.factory.annotation.Value;
@@ -189,6 +184,32 @@ public class RedisCommon {
         return template.execute(redisScript, keys);
     }
 
+    public boolean limitRequest(String userId) {
+        DefaultRedisScript<Long> redisScript = new DefaultRedisScript<>();
+
+        redisScript.setLocation(new ClassPathResource("/lua/rate_limiter.lua"));
+        redisScript.setResultType(Long.class);
+
+        String key = "rate_limiter:" + userId;
+        long bucketCapacity = 10;       // 1분에 최대 10개의 요청 허용
+        double refillRate = 10.0 / 60;  // 초당 0.1667개의 토큰 추가
+        long intervalInSeconds = 1;     // 리필 간격
+        long currentTime = Instant.now().getEpochSecond();
+
+        // Redis Lua 스크립트 실행
+        Long result = template.execute(
+                redisScript,
+                Collections.singletonList(key), // KEYS[1]
+                String.valueOf(bucketCapacity),  // ARGV[1] - String으로 변환
+                String.valueOf(refillRate),      // ARGV[2]
+                String.valueOf(currentTime),     // ARGV[3]
+                String.valueOf(intervalInSeconds) // ARGV[4]
+        );
+
+        log.info("result = {} ", result);
+
+        return result != null && result == 1;
+    }
 
 }
 
